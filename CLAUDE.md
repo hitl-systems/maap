@@ -99,7 +99,42 @@ when the answer is that the approach does not work.
 When a beat's artifact is missing, the work is not ahead of schedule; it is at an earlier beat than
 it appears.
 
-## 4. Reporting
+## 4. External-code questions: ask DeepWiki first (mandatory)
+
+Any question about a repository you do not own — a dependency, a library, a framework, a paper's
+reference implementation, a competitor's pipeline, a repo named in a prompt or a link — goes to the
+**DeepWiki MCP server** before it is answered from memory and before its source is read by hand.
+Without fail. This is the Beat 1 rule "read the primary source" made operational: DeepWiki is the
+cheapest primary source for third-party code, and answering such a question from recollection is the
+failure mode that rule exists to stop.
+
+Server: `https://mcp.deepwiki.com/mcp` (HTTP transport, no auth required). Tools:
+
+| Tool | Args | Use |
+|---|---|---|
+| `ask_wiki_question` | `repoName`, `question` | A specific question about behaviour, API, or internals |
+| `read_wiki_structure` | `repoName` | What topics the wiki covers — use to scope a question |
+| `read_wiki_contents` | `repoName` | The documentation itself, when the question is broad |
+
+`repoName` is `owner/repo`, nothing else.
+
+Rules:
+
+- **Ask before you guess.** During Beat 1, and again before Beat 2 commits to anyone else's API or
+  behaviour, ask. One `ask_wiki_question` call is cheaper than one wrong assumption.
+- **Ask before reading the source by hand.** Use it to find *where* to look, then read that code.
+  The two are complementary; skipping straight to a `grep` over an unfamiliar tree is not.
+- **Answers are evidence, not ground truth.** DeepWiki indexes a snapshot and is AI-generated. Quote
+  it with provenance, and confirm anything load-bearing — a signature, a default, a known bug —
+  against the actual pinned version in `Cargo.lock` / lockfile / vendored source before building on
+  it. A DeepWiki answer never satisfies Beat 4.
+- **A miss is reported, not skipped.** If the server is unreachable, or has no wiki for the repo, say
+  so explicitly and fall back to reading the source. Silently not asking is a protocol violation;
+  asking and getting nothing is not.
+- **Our own repos are exempt** — for those, the repo itself, its log, and its tests are the primary
+  source.
+
+## 5. Reporting
 
 - Numbers carry their provenance: which machine, which data, which commit, how many runs.
 - Selected or optimistic numbers are labelled as such, every time they are repeated.
